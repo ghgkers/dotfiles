@@ -32,5 +32,8 @@ services.xserver = {
 enable = true;
 windowManager.dwm.enable = true;
 };
+programs.bash.shellAliases = {
+dotsync = "cd ~/dotfiles && sudo cp /etc/nixos/configuration.nix . && sudo cp /etc/nixos/hardware-configuration.nix . && cp -r ~/.config/hypr . && cp -r ~/.config/waybar . && git add . && git commit -m \"update: $(date +'%Y-%m-%d %H:%M')\" && git push origin main && cd -";
+};
 }
 
