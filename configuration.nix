@@ -3,6 +3,7 @@
 imports = [ ./hardware-configuration.nix ];
 boot.loader.systemd-boot.enable = true;
 boot.loader.efi.canTouchEfiVariables = true;
+boot.kernelParams = [ "modprobe.blacklist=i2c_hid_acpi" ];
 networking.hostName = "nix";
 networking.networkmanager.enable = true;
 nixpkgs.config.allowUnfree = true;
