@@ -1,0 +1,29 @@
+{
+    "layer": "top",
+    "position": "top",
+    "height": 36,
+    "margin-top": 5,
+    "margin-left": 10,
+    "margin-right": 10,
+    "spacing": 4,
+    "modules-left": ["hyprland/workspaces", "cpu", "memory"],
+    "modules-center": ["clock"],
+    "modules-right": ["pulseaudio", "network", "battery", "tray"],
+
+    "hyprland/workspaces": {
+        "format": "{name}"
+    },
+    "clock": {
+        "format": "{:%I:%M %p}"
+    },
+    "pulseaudio": {
+        "format": "VOL {volume}%"
+    },
+    "network": {
+        "format-wifi": "WIFI",
+        "format-ethernet": "ETH"
+    },
+    "battery": {
+        "format": "BAT {capacity}%"
+    }
+}
