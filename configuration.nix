@@ -23,7 +23,24 @@ ${pkgs.flatpak}/bin/flatpak install -y flathub org.vinegarhq.Sober'';};
 system.stateVersion="25.11";
 services.gvfs.enable=true;
 services.udisks2.enable=true;
-services.picom={enable=true;backend="glx";vSync=true;activeOpacity=1.0;inactiveOpacity=0.9;settings={blur={method="dual_kawase";strength=5;};shadow=true;shadow-radius=12;shadow-offset-x=-12;shadow-offset-y=-12;unredir-if-possible=true;};};
+services.picom={
+  enable=true;
+  backend="glx";
+  vSync=true;
+  activeOpacity=0.92;
+  inactiveOpacity=0.85;
+  fade=true;
+  fadeDelta=5;
+  settings={
+    corner-radius=12;
+    blur={method="dual_kawase";strength=5;};
+    shadow=true;
+    shadow-radius=12;
+    shadow-offset-x=-12;
+    shadow-offset-y=-12;
+    unredir-if-possible=true;
+  };
+};
 boot.kernelPackages=pkgs.linuxPackages_zen;
 services.xserver={enable=true;windowManager.dwm.enable=true;};
 programs.bash.shellAliases={dotsync="cd ~/dotfiles && sudo cp /etc/nixos/configuration.nix . && sudo cp /etc/nixos/hardware-configuration.nix . && cp -r ~/.config/hypr . && cp -r ~/.config/waybar . && git add . && git commit -m \"update: $(date +'%Y-%m-%d %H:%M')\" && git push origin main && cd -";};
@@ -35,7 +52,6 @@ sed -i "/static const Key keys/a {0,XF86XK_AudioRaiseVolume,spawn,{.v=upvol}}," 
 sed -i "/static const Key keys/a {0,XF86XK_AudioLowerVolume,spawn,{.v=downvol}}," config.def.h
 sed -i "/static const Key keys/a {0,XF86XK_AudioMute,spawn,{.v=mutevol}}," config.def.h
 sed -i "/static const Key keys/a {0,XF86XK_MonBrightnessUp,spawn,{.v=brup}}," config.def.h
-sed -i "/static const Key keys/a {0,XF86XK_MonBrightnessDown,spawn,{.v=brdown}}," config.def.h
-'';});})];
+sed -i "/static const Key keys/a {0,XF86XK_MonBrightnessDown,spawn,{.v=brdown}}," config.def.h'';});})];
 services.libinput={enable=true;touchpad.disableWhileTyping=true;touchpad.additionalOptions=''Option "Ignore" "on"'';};
 }
