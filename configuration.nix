@@ -37,6 +37,13 @@ remotePlay.openFirewall = true;
 dedicatedServer.openFirewall = true;
 };
 services.flatpak.enable = true;
+system.activationScripts.flatpak-setup = {
+text = ''
+${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo 
+${pkgs.flatpak}/bin/flatpak install -y flathub org.prismlauncher.PrismLauncher
+${pkgs.flatpak}/bin/flatpak install -y flathub org.vinegarhq.Sober
+'';
+};
 system.stateVersion = "25.11";
 services.gvfs.enable = true; 
 services.udisks2.enable = true;
