@@ -31,6 +31,9 @@ extraGroups = [ "wheel"  "networkmanager" ];
 packages = with pkgs; [kitty hyprland waybar st dmenu vim asusctl fastfetch vesktop dwm ayugram-desktop librewolf xorg-server pavucontrol wofi yazi flatpak micro nitch wl-clipboard appimage-run git gh pkg-config hyprpaper gamemode htop xfce.thunar xfce.thunar-volman xfce.thunar-archive-plugin ];
 };
 programs.hyprland.enable = true;
+environment.shellAliases = {
+mc = "appimage-run /home/dx3d/Games/ely.AppImage";
+};
 programs.steam = {
 enable = true;
 remotePlay.openFirewall = true;
@@ -41,19 +44,6 @@ system.activationScripts.flatpak-setup = {
 text = ''
 ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 ${pkgs.flatpak}/bin/flatpak install -y flathub org.vinegarhq.Sober
-FLATPAK_PRISM="/home/dx3d/.var/app/org.prismlauncher.PrismLauncher/data/PrismLauncher"
-NATIVE_PRISM="/home/dx3d/.local/share/PrismLauncher"
-create_offline_acc() {
-local PATH_DIR="$1"
-if [ ! -f "$PATH_DIR/accounts.json" ]; then
-mkdir -p "$PATH_DIR"
-echo '{"accounts":[{"active":true,"entitlements":[],"profile":{"id":"00000000000000000000000000000000","name":"Player"},"type":"Offline"}],"formatVersion":3}' > "$PATH_DIR/accounts.json"
-chown -R dx3d:users "$(dirname "$(dirname "$PATH_DIR")")" || true
-echo "Prism Launcher: Offline account injected into $PATH_DIR"
-fi
-}
-create_offline_acc "$FLATPAK_PRISM"
-create_offline_acc "$NATIVE_PRISM"
 '';
 };
 system.stateVersion = "25.11";
