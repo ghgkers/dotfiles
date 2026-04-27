@@ -28,7 +28,7 @@ NIXOS_OZONE_WL = "1";
 users.users.dx3d = {
 isNormalUser = true;
 extraGroups = [ "wheel"  "networkmanager" ];
-packages = with pkgs; [kitty hyprland waybar st dmenu vim asusctl fastfetch vesktop dwm ayugram-desktop librewolf wofi yazi flatpak micro nitch wl-clipboard git gh hyprpaper gamemode htop xfce.thunar xfce.thunar-volman xfce.thunar-archive-plugin ];
+packages = with pkgs; [kitty hyprland waybar st dmenu vim asusctl fastfetch vesktop dwm ayugram-desktop librewolf pavucontrol wofi yazi flatpak micro nitch wl-clipboard git gh hyprpaper gamemode htop xfce.thunar xfce.thunar-volman xfce.thunar-archive-plugin ];
 };
 programs.hyprland.enable = true;
 programs.steam = {
@@ -48,6 +48,25 @@ windowManager.dwm.enable = true;
 programs.bash.shellAliases = {
 dotsync = "cd ~/dotfiles && sudo cp /etc/nixos/configuration.nix . && sudo cp /etc/nixos/hardware-configuration.nix . && cp -r ~/.config/hypr . && cp -r ~/.config/waybar . && git add . && git commit -m \"update: $(date +'%Y-%m-%d %H:%M')\" && git push origin main && cd -";
 };
+nixpkgs.overlays = [
+    (self: super: {
+      dwm = super.dwm.overrideAttrs (oldAttrs: {
+        postPatch = ''
+          # 1. Меняем синий цвет на оранжевый
+          sed -i 's/#005577/#ff9e64/g' config.def.h
+          
+          # 2. Добавляем поддержку медиа-клавиш в заголовок
+          sed -i '1i #include <X11/XF86keysym.h>' config.def.h
+          
+          # 3. Прописываем команды для громкости (WirePlumber)
+          sed -i "/static const char \*termcmd/a static const char *upvol[] = { \"wpctl\", \"set-volume\", \"@DEFAULT_AUDIO_SINK@\", \"5%+\", NULL };\nstatic const char *downvol[] = { \"wpctl\", \"set-volume\", \"@DEFAULT_AUDIO_SINK@\", \"5%-\", NULL };\nstatic const char *mutevol[] = { \"wpctl\", \"set-mute\", \"@DEFAULT_AUDIO_SINK@\", \"toggle\", NULL };" config.def.h
+          
+          # 4. Привязываем команды к кнопкам (XF86 Audio)
+          sed -i "/static const Key keys/a \	{ 0, XF86XK_AudioRaiseVolume, spawn, {.v = upvol } },\n	{ 0, XF86XK_AudioLowerVolume, spawn, {.v = downvol } },\n	{ 0, XF86XK_AudioMute, spawn, {.v = mutevol } }," config.def.h
+        '';
+      });
+    })
+  ];
 services.libinput = {
 enable = true;
 touchpad.disableWhileTyping = true;
