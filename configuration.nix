@@ -32,7 +32,6 @@ packages = with pkgs; [kitty hyprland waybar st dmenu vim asusctl fastfetch vesk
 };
 programs.hyprland.enable = true;
 environment.shellAliases = {
-mc = "appimage-run /home/dx3d/Games/ely.AppImage";
 };
 programs.steam = {
 enable = true;
