@@ -35,11 +35,29 @@ programs.steam = {
 enable = true;
 remotePlay.openFirewall = true;
 dedicatedServer.openFirewall = true;
-  };
+};
 services.flatpak.enable = true;
 system.stateVersion = "25.11";
 services.gvfs.enable = true; 
 services.udisks2.enable = true;
+services.picom = {
+enable = true;
+backend = "glx";
+vSync = true;
+activeOpacity = 1.0;
+inactiveOpacity = 0.9;
+settings = {
+blur = {
+method = "dual_kawase";
+strength = 5;
+};
+shadow = true;
+shadow-radius = 12;
+shadow-offset-x = -12;
+shadow-offset-y = -12;
+unredir-if-possible = true;
+};
+};
 boot.kernelPackages = pkgs.linuxPackages_zen;
 services.xserver = {
 enable = true;
