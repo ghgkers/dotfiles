@@ -20,7 +20,7 @@ services.tlp.enable=true;
 i18n.defaultLocale="en_US.UTF-8";
 console={font="Lat2-Terminus16";keyMap="us";};
 environment.sessionVariables={WLR_NO_HARDWARE_CURSORS="1";NIXOS_OZONE_WL="1";};
-users.users.dx3d={isNormalUser=true;extraGroups=["wheel" "networkmanager" "video" "audio"];packages=with pkgs;[kitty hyprland waybar st dmenu vim asusctl fastfetch vesktop ayugram-desktop librewolf xorg-server pavucontrol wofi yazi flatpak micro nitch wl-clipboard appimage-run git gh pkg-config hyprpaper htop xfce.thunar xfce.thunar-volman xfce.thunar-archive-plugin brightnessctl base16-schemes flameshot xclip wireplumber acpi lm_sensors gawk procps xorg.xsetroot];};
+users.users.dx3d={isNormalUser=true;extraGroups=["wheel" "networkmanager" "video" "audio"];packages=with pkgs;[ghostty kitty hyprland waybar st dmenu vim asusctl fastfetch vesktop ayugram-desktop librewolf xorg-server pavucontrol wofi yazi flatpak micro nitch wl-clipboard appimage-run git gh pkg-config hyprpaper htop xfce.thunar xfce.thunar-volman xfce.thunar-archive-plugin brightnessctl base16-schemes flameshot xclip wireplumber acpi lm_sensors gawk procps xorg.xsetroot];};
 programs.hyprland.enable=true;
 programs.steam={enable=true;remotePlay.openFirewall=true;dedicatedServer.openFirewall=true;};
 services.flatpak.enable=true;
@@ -28,23 +28,27 @@ services.gvfs.enable=true;
 services.udisks2.enable=true;
 services.picom={enable=true;backend="glx";vSync=true;activeOpacity=0.92;inactiveOpacity=0.85;fade=true;fadeDelta=5;settings={corner-radius=12;blur={method="dual_kawase";strength=5;};shadow=true;};};
 system.stateVersion="25.11";
-system.activationScripts.backup-config={text="cp /etc/nixos/configuration.nix /home/dx3d/config_backup_$(date +%Y%m%d_%H%M%S).nix||true";deps=[];};
+system.activationScripts={
+backup-config={text="cp /etc/nixos/configuration.nix /home/dx3d/config_backup_$(date +%Y%m%d_%H%M%S).nix||true";deps=[];};
+fastfetch-config={text="mkdir -p /home/dx3d/.config/fastfetch&&echo '{\"logo\":{\"type\":\"iterm\",\"source\":\"/home/dx3d/Downloads/zam.jpg\",\"width\":30,\"height\":15},\"modules\":[\"title\",\"separator\",\"os\",\"host\",\"kernel\",\"uptime\",\"packages\",\"shell\",\"display\",\"wm\",\"terminal\",\"cpu\",\"gpu\",\"memory\",\"colors\"]}'>/home/dx3d/.config/fastfetch/config.jsonc&&chown dx3d:users /home/dx3d/.config/fastfetch/config.jsonc";deps=[];};
+};
 programs.bash.shellAliases={dotsync="cd ~/dotfiles&&sudo cp /etc/nixos/configuration.nix .&&sudo cp /etc/nixos/hardware-configuration.nix .&&cp -r ~/.config/hypr .&&cp -r ~/.config/waybar .&&git add .&&git commit -m \"update:$(date +'%Y-%m-%d %H:%M')\"&&git push origin main&&cd -";clean="sudo nix-collect-garbage -d";};
 nixpkgs.overlays=[(self: super: {dwm=super.dwm.overrideAttrs(oldAttrs:{postPatch=''
+sed -i 's/static const char \*termcmd\[\]  = { "st", NULL };/static const char *termcmd[] = { "ghostty", NULL };/' config.def.h
 sed -i 's/#005577/#8f3f71/g' config.def.h
 sed -i 's/#222222/#282828/g' config.def.h
 sed -i 's/#bbbbbb/#ebdbb2/g' config.def.h
 sed -i 's/#eeeeee/#282828/g' config.def.h
 sed -i '1i #include <X11/XF86keysym.h>' config.def.h
 sed -i "/static const char \*termcmd/a static const char *vdn[] = { \"wpctl\", \"set-volume\", \"@DEFAULT_AUDIO_SINK@\", \"5%-\", NULL };\nstatic const char *vup[] = { \"wpctl\", \"set-volume\", \"@DEFAULT_AUDIO_SINK@\", \"5%+\", NULL };\nstatic const char *mutmic[] = { \"wpctl\", \"set-mute\", \"@DEFAULT_AUDIO_SOURCE@\", \"toggle\", NULL };" config.def.h
+sed -i "/static const Key keys/a {MODKEY|ShiftMask, XK_c, spawn, {.v = termcmd}}," config.def.h
 sed -i "/static const Key keys/a {0, XF86XK_AudioLowerVolume, spawn, {.v = vdn}}," config.def.h
 sed -i "/static const Key keys/a {0, XF86XK_AudioRaiseVolume, spawn, {.v = vup}}," config.def.h
 sed -i "/static const Key keys/a {0, XF86XK_AudioMicMute, spawn, {.v = mutmic}}," config.def.h
-'';});st=super.st.overrideAttrs(oldAttrs:{postPatch=''sed -i 's/opacity = 1.0/opacity = 0.8/g' config.def.h||sed -i 's/alpha = 1.0/alpha = 0.8/g' config.def.h'';});})];
+'';});})];
 services.libinput={enable=true;touchpad.disableWhileTyping=true;};
 services.xserver.displayManager.sessionCommands=''
 ${pkgs.xorg.xrandr}/bin/xrandr --output DP-2 --mode 2560x1440 --rate 165
-mkdir -p ~/.config/fastfetch&&echo '{"modules":["title","separator","os","host","kernel","uptime","packages","shell","display","wm","terminal","cpu","gpu","memory","colors"]}'>~/.config/fastfetch/config.jsonc
 while true;do
 vol=$(${pkgs.wireplumber}/bin/wpctl get-volume @DEFAULT_AUDIO_SINK@|${pkgs.gawk}/bin/awk '{print int($2*100)"%"}')
 bat=$(${pkgs.acpi}/bin/acpi -b|${pkgs.gawk}/bin/awk '{print $4}'|tr -d ',')
