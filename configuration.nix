@@ -30,7 +30,7 @@ services.picom={enable=true;backend="glx";vSync=true;activeOpacity=0.92;inactive
 system.stateVersion="25.11";
 system.activationScripts={
 backup-config={text="cp /etc/nixos/configuration.nix /home/dx3d/config_backup_$(date +%Y%m%d_%H%M%S).nix||true";deps=[];};
-fastfetch-config={text="mkdir -p /home/dx3d/.config/fastfetch&&echo '{\"logo\":{\"type\":\"iterm\",\"source\":\"/home/dx3d/Downloads/zam.jpg\",\"width\":30,\"height\":15},\"modules\":[\"title\",\"separator\",\"os\",\"host\",\"kernel\",\"uptime\",\"packages\",\"shell\",\"display\",\"wm\",\"terminal\",\"cpu\",\"gpu\",\"memory\",\"colors\"]}'>/home/dx3d/.config/fastfetch/config.jsonc&&chown dx3d:users /home/dx3d/.config/fastfetch/config.jsonc";deps=[];};
+fastfetch-config={text="rm -rf /home/dx3d/.config/fastfetch/config.jsonc&&mkdir -p /home/dx3d/.config/fastfetch&&echo '{\"logo\":{\"source\":\"/home/dx3d/Downloads/zam.jpg\",\"width\":30,\"height\":15},\"modules\":[\"title\",\"separator\",\"os\",\"host\",\"kernel\",\"uptime\",\"packages\",\"shell\",\"display\",\"wm\",\"terminal\",\"cpu\",\"gpu\",\"memory\",\"colors\"]}'>/home/dx3d/.config/fastfetch/config.jsonc&&chown dx3d:users /home/dx3d/.config/fastfetch/config.jsonc";deps=[];};
 };
 programs.bash.shellAliases={dotsync="cd ~/dotfiles&&sudo cp /etc/nixos/configuration.nix .&&sudo cp /etc/nixos/hardware-configuration.nix .&&cp -r ~/.config/hypr .&&cp -r ~/.config/waybar .&&git add .&&git commit -m \"update:$(date +'%Y-%m-%d %H:%M')\"&&git push origin main&&cd -";clean="sudo nix-collect-garbage -d";};
 nixpkgs.overlays=[(self: super: {dwm=super.dwm.overrideAttrs(oldAttrs:{postPatch=''
