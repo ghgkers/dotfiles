@@ -21,7 +21,15 @@ programs={steam.enable=true;gamemode.enable=true;hyprland.enable=true;bash.shell
 nixpkgs.overlays=[(self: super:{dwm=super.dwm.overrideAttrs(o:{postPatch=''
   sed -i '/static const char \*termcmd/a static const char *vdn[]={"wpctl","set-volume","@DEFAULT_AUDIO_SINK@","5%-",NULL};\nstatic const char *vup[]={"wpctl","set-volume","@DEFAULT_AUDIO_SINK@","5%+",NULL};' config.def.h
 '';});})];
-system.activationScripts.ff.text="mkdir -p /home/dx3d/.config/fastfetch&&echo '{\"logo\":{\"type\":\"kitty-direct\",\"source\":\"/home/dx3d/Downloads/zam.jpg\",\"width\":25,\"height\":12}}'>/home/dx3d/.config/fastfetch/config.jsonc&&chown dx3d:users /home/dx3d/.config/fastfetch/config.jsonc";
-services.xserver.displayManager.sessionCommands="${pkgs.xorg.xrandr}/bin/xrandr --output DP-2 --mode 2560x1440 --rate 165\nwhile true;do\nv=$(wpctl get-volume @DEFAULT_AUDIO_SINK@|awk '{print int($2*100)\"%\"}')\nb=$(acpi -b|awk '{print $4}'|tr -d ',')\nxsetroot -name \"Vol:$v | Bat:$b | $(date +'%H:%M')\"\nsleep 2\ndone&";
+system.activationScripts.ff.text="rm -rf /home/dx3d/.config/fastfetch";
+services.xserver.displayManager.sessionCommands=''
+${pkgs.xorg.xrandr}/bin/xrandr --output DP-2 --mode 2560x1440 --rate 165
+while true;do
+v=$(wpctl get-volume @DEFAULT_AUDIO_SINK@|awk '{print int($2*100)"%"}')
+b=$(acpi -b|awk '{print $4}'|tr -d ',')
+xsetroot -name "Vol:$v | Bat:$b | $(date +'%H:%M')"
+sleep 2
+done&
+'';
 system.stateVersion="25.11";
 }
