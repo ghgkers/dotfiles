@@ -14,10 +14,20 @@ services={
   picom={enable=true;backend="glx";vSync=true;activeOpacity=0.92;inactiveOpacity=0.85;fade=true;settings={corner-radius=12;blur={method="dual_kawase";strength=5;};};};
 };
 users.users.dx3d={isNormalUser=true;extraGroups=["wheel" "networkmanager" "video" "audio"];
-packages=with pkgs;[ghostty kitty fastfetch vesktop ayugram-desktop librewolf pavucontrol wofi yazi micro nitch wl-clipboard git htop brightnessctl flameshot xclip wireplumber lm_sensors gawk xorg.xsetroot acpi procps xfce.thunar];};
+packages=with pkgs;[ghostty kitty fastfetch vesktop ayugram-desktop librewolf pavucontrol wofi yazi micro nitch wl-clipboard git htop brightnessctl flameshot xclip wireplumber lm_sensors gawk xorg.xsetroot acpi procps xfce.thunar xfce.thunar-volman];};
 programs={steam.enable=true;gamemode.enable=true;hyprland.enable=true;bash.shellAliases={
-  dotsync="cd ~/dotfiles && sudo cp /etc/nixos/*.nix . && cp -r ~/.config/hypr ~/.config/waybar . && git add . && git commit -m \"upd\" && git push origin main";
-  clean="sudo nix-collect-garbage -d";
+  dotsync = ''
+    cd ~/dotfiles && \
+    sudo cp /etc/nixos/configuration.nix . && \
+    sudo cp /etc/nixos/hardware-configuration.nix . && \
+    cp -r ~/.config/hypr . && \
+    cp -r ~/.config/waybar . && \
+    git add . && \
+    git commit -m "update:$(date +'%Y-%m-%d %H:%M')" && \
+    git push origin main && \
+    cd -
+  '';
+  clean = "sudo nix-collect-garbage -d";
 };};
 nixpkgs.overlays=[(self: super:{dwm=super.dwm.overrideAttrs(o:{postPatch=''
   sed -i 's/"st"/"ghostty"/' config.def.h
@@ -35,7 +45,7 @@ services.xserver.displayManager.sessionCommands=''
   while true;do
   v=$(wpctl get-volume @DEFAULT_AUDIO_SINK@|awk '{print int($2*100)"%"}')
   b=$(acpi -b|awk '{print $4}'|tr -d ',')
-  xsetroot -name "V:$v | B:$b | $(date +'%H:%M')"
+  xsetroot -name "Vol:$v | Bat:$b | $(date +'%H:%M')"
   sleep 2
   done&
 '';
