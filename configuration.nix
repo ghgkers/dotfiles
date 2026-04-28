@@ -13,7 +13,7 @@ services={
   picom={enable=true;backend="glx";vSync=true;activeOpacity=0.92;inactiveOpacity=0.85;fade=true;settings={corner-radius=12;blur={method="dual_kawase";strength=5;};};};
 };
 users.users.dx3d={isNormalUser=true;extraGroups=["wheel" "networkmanager" "video" "audio"];
-packages=with pkgs;[st kitty hyprland waybar fastfetch vesktop ayugram-desktop librewolf pavucontrol wofi yazi micro nitch git htop brightnessctl flameshot xclip wireplumber lm_sensors gawk xorg.xsetroot procps xfce.thunar];};
+packages=with pkgs;[st kitty hyprland waybar fastfetch vesktop ayugram-desktop librewolf pavucontrol wofi yazi micro nitch git gh htop brightnessctl flameshot xclip wireplumber lm_sensors gawk xorg.xsetroot procps xfce.thunar];};
 programs={steam.enable=true;gamemode.enable=true;hyprland.enable=true;bash.shellAliases={
   dotsync="cd ~/dotfiles&&sudo cp /etc/nixos/configuration.nix .&&sudo cp /etc/nixos/hardware-configuration.nix .&&cp -r ~/.config/hypr .&&cp -r ~/.config/waybar .&&git add .&&git commit -m \"update:$(date +'%Y-%m-%d %H:%M')\"&&git push origin main&&cd -";
   clean="sudo nix-collect-garbage -d";
