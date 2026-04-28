@@ -13,7 +13,7 @@ services={
   picom={enable=true;backend="glx";vSync=true;activeOpacity=0.92;inactiveOpacity=0.85;fade=true;settings={corner-radius=12;blur={method="dual_kawase";strength=5;};};};
 };
 users.users.dx3d={isNormalUser=true;extraGroups=["wheel" "networkmanager" "video" "audio"];
-packages=with pkgs;[st kitty hyprland waybar fastfetch vesktop ayugram-desktop librewolf pavucontrol wofi yazi micro nitch git gh htop brightnessctl flameshot xclip wireplumber lm_sensors gawk xorg.xsetroot procps xfce.thunar];};
+packages=with pkgs;[st kitty hyprland waybar fastfetch vesktop ayugram-desktop librewolf pavucontrol wofi yazi micro nitch git gh dmenu htop brightnessctl flameshot xclip wireplumber lm_sensors gawk xorg.xsetroot procps xfce.thunar];};
 programs={steam.enable=true;gamemode.enable=true;hyprland.enable=true;bash.shellAliases={
   dotsync="cd ~/dotfiles&&sudo cp /etc/nixos/configuration.nix .&&sudo cp /etc/nixos/hardware-configuration.nix .&&cp -r ~/.config/hypr .&&cp -r ~/.config/waybar .&&git add .&&git commit -m \"update:$(date +'%Y-%m-%d %H:%M')\"&&git push origin main&&cd -";
   clean="sudo nix-collect-garbage -d";
@@ -22,14 +22,6 @@ nixpkgs.overlays=[(self: super:{dwm=super.dwm.overrideAttrs(o:{postPatch=''
   sed -i '/static const char \*termcmd/a static const char *vdn[]={"wpctl","set-volume","@DEFAULT_AUDIO_SINK@","5%-",NULL};\nstatic const char *vup[]={"wpctl","set-volume","@DEFAULT_AUDIO_SINK@","5%+",NULL};' config.def.h
 '';});})];
 system.activationScripts.ff.text="rm -rf /home/dx3d/.config/fastfetch";
-services.xserver.displayManager.sessionCommands=''
-${pkgs.xorg.xrandr}/bin/xrandr --output DP-2 --mode 2560x1440 --rate 165
-while true;do
-v=$(wpctl get-volume @DEFAULT_AUDIO_SINK@|awk '{print int($2*100)"%"}')
-b=$(acpi -b|awk '{print $4}'|tr -d ',')
-xsetroot -name "Vol:$v | Bat:$b | $(date +'%H:%M')"
-sleep 2
-done&
-'';
+services.xserver.displayManager.sessionCommands="${pkgs.xorg.xrandr}/bin/xrandr --output DP-2 --mode 2560x1440 --rate 165\nwhile true;do\nv=$(wpctl get-volume @DEFAULT_AUDIO_SINK@|awk '{print int($2*100)\"%\"}')\nb=$(acpi -b|awk '{print $4}'|tr -d ',')\nxsetroot -name \"Vol:$v | Bat:$b | $(date +'%H:%M')\"\nsleep 2\ndone&";
 system.stateVersion="25.11";
 }
