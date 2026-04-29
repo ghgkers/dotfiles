@@ -20,7 +20,7 @@ nix.settings.experimental-features=["nix-command" "flakes"];
 boot={
 loader={systemd-boot.enable=true;efi.canTouchEfiVariables=true;};
 kernelPackages=pkgs.linuxPackages_cachyos;
-kernelParams=["nvidia-drm.modeset=1" "nvidia.NVreg_PreserveVideoMemoryAllocations=1"];
+kernelParams=["nvidia-drm.modeset=1" "nvidia.NVreg_PreserveVideoMemoryAllocations=1" "modprobe.blacklist=i2c_hid_acpi,i2c_hid"];
 };
 networking.hostName="nix";
 networking.networkmanager.enable=true;
@@ -51,7 +51,7 @@ clean="sudo nix-collect-garbage -d";
 users.users.dx3d={
 isNormalUser=true;
 extraGroups=["wheel" "networkmanager" "video" "audio"];
-packages=with pkgs;[mySowm st scrot micro git gh feh dmenu xclip flatpak picom librewolf fastfetch mangohud pciutils xorg.xorgserver vesktop config.boot.kernelPackages.nvidiaPackages.stable.settings];
+packages=with pkgs;[mySowm st vesktop scrot micro git gh feh dmenu xclip flatpak picom librewolf fastfetch mangohud pciutils xorg.xorgserver xorg.xinput config.boot.kernelPackages.nvidiaPackages.stable.settings];
 };
 system.activationScripts.sober.text=''
 ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
