@@ -16,7 +16,8 @@ installPhase="mkdir -p $out/bin;make PREFIX=$out install";
 in{
 imports=[./hardware-configuration.nix];
 nixpkgs.overlays=[inputs.chaotic.overlays.default];
-nix.settings.experimental-features=["nix-command" "flakes"];
+nix.settings={experimental-features=["nix-command" "flakes"];auto-optimise-store=true;};
+nix.gc={automatic=true;dates="weekly";options="--delete-older-than 7d";};
 boot={
 loader={systemd-boot.enable=true;efi.canTouchEfiVariables=true;};
 kernelPackages=pkgs.linuxPackages_cachyos;
@@ -25,7 +26,9 @@ kernelParams=["nvidia-drm.modeset=1" "nvidia.NVreg_PreserveVideoMemoryAllocation
 networking.hostName="nix";
 networking.networkmanager.enable=true;
 nixpkgs.config.allowUnfree=true;
+zramSwap.enable=true;
 hardware.nvidia={open=true;modesetting.enable=true;package=config.boot.kernelPackages.nvidiaPackages.stable;};
+services.pipewire={enable=true;alsa.enable=true;alsa.support32Bit=true;pulse.enable=true;};
 services.xserver={
 enable=true;
 videoDrivers=["nvidia"];
@@ -51,7 +54,7 @@ clean="sudo nix-collect-garbage -d";
 users.users.dx3d={
 isNormalUser=true;
 extraGroups=["wheel" "networkmanager" "video" "audio"];
-packages=with pkgs;[mySowm st vesktop scrot micro git gh feh dmenu xclip flatpak picom librewolf fastfetch mangohud pciutils xorg.xorgserver xorg.xinput config.boot.kernelPackages.nvidiaPackages.stable.settings];
+packages=with pkgs;[mySowm st scrot micro git gh feh dmenu xclip flatpak picom librewolf fastfetch mangohud pciutils xorg.xorgserver xorg.xinput config.boot.kernelPackages.nvidiaPackages.stable.settings];
 };
 system.activationScripts.sober.text=''
 ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
