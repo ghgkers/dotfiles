@@ -25,18 +25,16 @@ kernelParams=["nvidia-drm.modeset=1" "nvidia.NVreg_PreserveVideoMemoryAllocation
 networking.hostName="nix";
 networking.networkmanager.enable=true;
 nixpkgs.config.allowUnfree=true;
-hardware.nvidia={
-open=true;
-modesetting.enable=true;
-package=config.boot.kernelPackages.nvidiaPackages.stable;
-};
+hardware.nvidia={open=true;modesetting.enable=true;package=config.boot.kernelPackages.nvidiaPackages.stable;};
 services.xserver={
 enable=true;
 videoDrivers=["nvidia"];
 xkb={layout="us,ru";options="grp:win_space_toggle";};
 displayManager.sessionCommands=''
-${pkgs.picom}/bin/picom &
-${pkgs.feh}/bin/feh --bg-fill /home/dx3d/Downloads/zam.jpg &
+nvidia-settings --assign CurrentMetaMode="DP-2: 2560x1440_165 { ViewPortIn=1440x1080, ViewPortOut=2560x1440+0+0 }"
+xrandr --output DP-2 --panning 0x0 --fb 1440x1080
+picom &
+feh --bg-fill /home/dx3d/Downloads/zam.jpg &
 ${mySowm}/bin/sowm
 '';
 };
@@ -53,7 +51,7 @@ clean="sudo nix-collect-garbage -d";
 users.users.dx3d={
 isNormalUser=true;
 extraGroups=["wheel" "networkmanager" "video" "audio"];
-packages=with pkgs;[mySowm st scrot micro git feh dmenu xclip flatpak picom librewolf gh fastfetch mangohud pciutils];
+packages=with pkgs;[mySowm st scrot micro git gh feh dmenu xclip flatpak picom librewolf fastfetch mangohud pciutils xorg.xorgserver vesktop config.boot.kernelPackages.nvidiaPackages.stable.settings];
 };
 system.activationScripts.sober.text=''
 ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
