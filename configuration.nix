@@ -3,7 +3,6 @@
 {
   imports = [ ./hardware-configuration.nix ];
 
-  # Overlays for Chaotic-Nyx and custom DWM patches
   nixpkgs.overlays = [
     inputs.chaotic.overlays.default
     (self: super: {
@@ -17,7 +16,6 @@
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  # Stylix UI Theming
   stylix = {
     enable = true;
     image = /home/dx3d/Downloads/zam.jpg;
@@ -27,7 +25,6 @@
     opacity.terminal = 0.8;
   };
 
-  # Bootloader and Kernel (CachyOS + NVIDIA Fixes)
   boot = {
     loader = { systemd-boot.enable = true; efi.canTouchEfiVariables = true; };
     kernelParams = [ 
@@ -42,7 +39,6 @@
   networking.networkmanager.enable = true;
   nixpkgs.config.allowUnfree = true;
 
-  # NVIDIA Graphics Configuration
   hardware.nvidia = {
     open = true;
     modesetting.enable = true;
@@ -51,7 +47,6 @@
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
-  # System Services
   services = {
     xserver = {
       enable = true;
@@ -66,9 +61,16 @@
     desktopManager.plasma6.enable = true;
     asusd.enable = true;
     libinput.enable = true;
+    flatpak.enable = true; # Added back!
+    gvfs.enable = true;
   };
 
-  # User Configuration
+  # Automatically install Sober for Roblox
+  system.activationScripts.sober.text = ''
+    ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    ${pkgs.flatpak}/bin/flatpak install -y flathub io.github.sober_org.sober || true
+  '';
+
   users.users.dx3d = {
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
@@ -76,11 +78,10 @@
       st kitty hyprland waybar fastfetch vesktop ayugram-desktop 
       librewolf pavucontrol wofi yazi micro git gh dmenu 
       htop brightnessctl flameshot xclip wireplumber lm_sensors 
-      gawk xsetroot procps thunar appimage-run acpi
+      gawk xsetroot procps thunar appimage-run acpi flatpak
     ];
   };
 
-  # Programs and Aliases
   programs = {
     steam.enable = true;
     gamemode.enable = true;
