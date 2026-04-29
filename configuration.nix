@@ -54,7 +54,7 @@ clean="sudo nix-collect-garbage -d";
 users.users.dx3d={
 isNormalUser=true;
 extraGroups=["wheel" "networkmanager" "video" "audio"];
-packages=with pkgs;[mySowm st scrot micro git gh feh dmenu xclip flatpak picom librewolf fastfetch mangohud pciutils xorg.xorgserver xorg.xinput config.boot.kernelPackages.nvidiaPackages.stable.settings];
+packages=with pkgs;[mySowm st scrot vesktop micro git gh feh dmenu xclip flatpak picom librewolf fastfetch mangohud pciutils xorg.xorgserver xorg.xinput config.boot.kernelPackages.nvidiaPackages.stable.settings];
 };
 system.activationScripts.sober.text=''
 ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
