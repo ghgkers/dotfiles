@@ -53,7 +53,7 @@ clean="sudo nix-collect-garbage -d";
 users.users.dx3d={
 isNormalUser=true;
 extraGroups=["wheel" "networkmanager" "video" "audio"];
-packages=with pkgs;[mySowm st scrot micro git feh dmenu xclip flatpak picom librewolf fastfetch mangohud pciutils];
+packages=with pkgs;[mySowm st scrot micro git feh dmenu xclip flatpak picom librewolf gh fastfetch mangohud pciutils];
 };
 system.activationScripts.sober.text=''
 ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
