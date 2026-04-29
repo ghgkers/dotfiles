@@ -1,87 +1,95 @@
-{config,pkgs,...}:{
-imports=[./hardware-configuration.nix (import(builtins.fetchTarball"https://github.com/danth/stylix/archive/release-24.11.tar.gz")).nixosModules.stylix];
+{ config, pkgs, inputs, ... }:
 
-stylix={
-  enable=true;
-  image=/home/dx3d/Downloads/zam.jpg;
-  polarity="dark";
-  base16Scheme="${pkgs.base16-schemes}/share/themes/shades-of-purple.yaml";
-  cursor={package=pkgs.bibata-cursors;name="Bibata-Modern-Ice";};
-  opacity.terminal=0.8;
-};
+{
+  imports = [ ./hardware-configuration.nix ];
 
-nix.settings.auto-optimise-store=true;
-zramSwap.enable=true;
+  # Overlays for Chaotic-Nyx and custom DWM patches
+  nixpkgs.overlays = [
+    inputs.chaotic.overlays.default
+    (self: super: {
+      dwm = super.dwm.overrideAttrs (o: {
+        postPatch = ''
+          sed -i "/static const char \*termcmd/a static const char *vdn[]={ \"wpctl\", \"set-volume\", \"@DEFAULT_AUDIO_SINK@\", \"5%-\", NULL };\nstatic const char *vup[]={ \"wpctl\", \"set-volume\", \"@DEFAULT_AUDIO_SINK@\", \"5%+\", NULL };" config.def.h
+        '';
+      });
+    })
+  ];
 
-boot={
-  loader={systemd-boot.enable=true;efi.canTouchEfiVariables=true;};
-  kernelParams=["modprobe.blacklist=i2c_hid_acpi"];
-  kernelPackages=pkgs.linuxPackages_zen;
-};
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-networking={hostName="nix";networkmanager.enable=true;};
-nixpkgs.config.allowUnfree=true;
-hardware.nvidia={open=true;modesetting.enable=true;};
-
-services={
-  xserver={
-    enable=true;
-    videoDrivers=["nvidia"];
-    windowManager.dwm.enable=true;
-    xkb={layout="us,ru";options="grp:win_space_toggle";};
+  # Stylix UI Theming
+  stylix = {
+    enable = true;
+    image = /home/dx3d/Downloads/zam.jpg;
+    polarity = "dark";
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/shades-of-purple.yaml";
+    cursor = { package = pkgs.bibata-cursors; name = "Bibata-Modern-Ice"; size = 24; };
+    opacity.terminal = 0.8;
   };
-  displayManager.sddm.enable=true;
-  desktopManager.plasma6.enable=true;
-  asusd={enable=true;enableUserService=true;};
-  libinput.enable=true;
-  gvfs.enable=true;
-  udisks2.enable=true;
-  flatpak.enable=true;
-  picom={
-    enable=true;
-    vSync=true;
-    settings={corner-radius=12;blur={method="dual_kawase";strength=5;};};
+
+  # Bootloader and Kernel (CachyOS + NVIDIA Fixes)
+  boot = {
+    loader = { systemd-boot.enable = true; efi.canTouchEfiVariables = true; };
+    kernelParams = [ 
+      "modprobe.blacklist=i2c_hid_acpi" 
+      "nvidia-drm.modeset=1" 
+      "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
+    ];
+    kernelPackages = pkgs.linuxPackages_cachyos;
   };
-};
 
-users.users.dx3d={
-  isNormalUser=true;
-  extraGroups=["wheel" "networkmanager" "video" "audio"];
-  packages=with pkgs;[st kitty hyprland waybar fastfetch vesktop ayugram-desktop librewolf pavucontrol wofi yazi micro nitch git gh dmenu htop brightnessctl flameshot xclip wireplumber lm_sensors gawk xorg.xsetroot procps xfce.thunar appimage-run acpi];
-};
+  networking.hostName = "nix";
+  networking.networkmanager.enable = true;
+  nixpkgs.config.allowUnfree = true;
 
-programs={
-  steam.enable=true;
-  gamemode.enable=true;
-  hyprland.enable=true;
-  bash.shellAliases={
-    dotsync="cd ~/dotfiles&&sudo cp /etc/nixos/configuration.nix .&&sudo cp /etc/nixos/hardware-configuration.nix .&&cp -r ~/.config/hypr .&&cp -r ~/.config/waybar .&&git add .&&git commit -m \"update:$(date +'%Y-%m-%d %H:%M')\"&&git push origin main&&cd -";
-    clean="sudo nix-collect-garbage -d";
+  # NVIDIA Graphics Configuration
+  hardware.nvidia = {
+    open = true;
+    modesetting.enable = true;
+    powerManagement.enable = false; 
+    nvidiaSettings = true;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
-};
 
-nixpkgs.overlays=[(self: super:{
-  dwm=super.dwm.overrideAttrs(o:{
-    postPatch=''
-      sed -i '/static const char \*termcmd/a static const char *vdn[]={"wpctl","set-volume","@DEFAULT_AUDIO_SINK@","5%-",NULL};\nstatic const char *vup[]={"wpctl","set-volume","@DEFAULT_AUDIO_SINK@","5%+",NULL};' config.def.h
-    '';
-  });
-})];
+  # System Services
+  services = {
+    xserver = {
+      enable = true;
+      videoDrivers = [ "nvidia" ];
+      windowManager.dwm.enable = true;
+      xkb = { layout = "us,ru"; options = "grp:win_space_toggle"; };
+    };
+    displayManager.sddm = {
+      enable = true;
+      wayland.enable = true;
+    };
+    desktopManager.plasma6.enable = true;
+    asusd.enable = true;
+    libinput.enable = true;
+  };
 
-system.activationScripts={
-  ff.text="rm -rf /home/dx3d/.config/fastfetch";
-  sober="${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo\n${pkgs.flatpak}/bin/flatpak install -y flathub org.sober.Sober||true";
-};
+  # User Configuration
+  users.users.dx3d = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
+    packages = with pkgs; [
+      st kitty hyprland waybar fastfetch vesktop ayugram-desktop 
+      librewolf pavucontrol wofi yazi micro git gh dmenu 
+      htop brightnessctl flameshot xclip wireplumber lm_sensors 
+      gawk xsetroot procps thunar appimage-run acpi
+    ];
+  };
 
-services.xserver.displayManager.sessionCommands=''
-  ${pkgs.xorg.xrandr}/bin/xrandr --output DP-2 --mode 2560x1440 --rate 165
-  while true;do 
-    v=$(wpctl get-volume @DEFAULT_AUDIO_SINK@|awk '{print int($2*100)\"%\"}')
-    b=$(acpi -b|awk '{print $4}'|tr -d ',')
-    xsetroot -name "Vol:$v | Bat:$b | $(date +'%H:%M')"
-    sleep 2
-  done&
-'';
+  # Programs and Aliases
+  programs = {
+    steam.enable = true;
+    gamemode.enable = true;
+    hyprland.enable = true;
+    bash.shellAliases = {
+      dotsync = "cd ~/dotfiles && sudo cp /etc/nixos/configuration.nix . && sudo cp /etc/nixos/hardware-configuration.nix . && sudo cp /etc/nixos/flake.nix . && cp -r ~/.config/hypr . && cp -r ~/.config/waybar . && git add . && git commit -m \"update:$(date +'%Y-%m-%d %H:%M')\" && git pull origin main --rebase && git push origin main && cd -";
+      clean = "sudo nix-collect-garbage -d";
+    };
+  };
 
-system.stateVersion="25.11";
+  system.stateVersion = "25.11";
 }
