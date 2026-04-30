@@ -11,7 +11,7 @@ installPhase="mkdir -p $out/bin;make PREFIX=$out install";
 in{
 imports=[./hardware-configuration.nix];
 nixpkgs.overlays=[inputs.chaotic.overlays.default];
-nix.settings={experimental-features=["nix-command" "flakes"];auto-optimise-store=true;};
+nix.settings={experimental-features=["nix-command" "flakes"];auto-optimise-store=true;min-free=536870912;};
 nix.gc={automatic=true;dates="weekly";options="--delete-older-than 7d";};
 boot={
 loader={systemd-boot.enable=true;efi.canTouchEfiVariables=true;};
@@ -22,7 +22,10 @@ kernel.sysctl={"vm.vfs_cache_pressure"=500;"vm.swappiness"=10;};
 networking.hostName="nix";
 networking.networkmanager.enable=true;
 nixpkgs.config.allowUnfree=true;
-zramSwap.enable=true;
+hardware.enableAllFirmware=true;
+zramSwap={enable=true;algorithm="zstd";};
+services.fstrim.enable=true;
+services.dbus.implementation="broker";
 services.logind.settings.Login.NAutoVTs=2;
 services.journald.extraConfig="SystemMaxUse=50M";
 hardware.nvidia={open=true;modesetting.enable=true;package=config.boot.kernelPackages.nvidiaPackages.stable;};
