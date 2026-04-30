@@ -3,12 +3,7 @@ let
 mySowm=pkgs.stdenv.mkDerivation{
 pname="sowm";
 version="master";
-src=pkgs.fetchFromGitHub{
-owner="dylanaraps";
-repo="sowm";
-rev="master";
-sha256="sha256-Q65sU5K86pFk3QNlzfxgyoEw6NpBaZQmFOkUFnmoh+U=";
-};
+src=pkgs.fetchFromGitHub{owner="dylanaraps";repo="sowm";rev="master";sha256="sha256-Q65sU5K86pFk3QNlzfxgyoEw6NpBaZQmFOkUFnmoh+U=";};
 buildInputs=with pkgs;[libx11 libxinerama];
 nativeBuildInputs=with pkgs;[gcc gnumake];
 installPhase="mkdir -p $out/bin;make PREFIX=$out install";
@@ -22,11 +17,14 @@ boot={
 loader={systemd-boot.enable=true;efi.canTouchEfiVariables=true;};
 kernelPackages=pkgs.linuxPackages_cachyos;
 kernelParams=["nvidia-drm.modeset=1" "nvidia.NVreg_PreserveVideoMemoryAllocations=1" "modprobe.blacklist=i2c_hid_acpi,i2c_hid"];
+kernel.sysctl={"vm.vfs_cache_pressure"=500;"vm.swappiness"=10;};
 };
 networking.hostName="nix";
 networking.networkmanager.enable=true;
 nixpkgs.config.allowUnfree=true;
 zramSwap.enable=true;
+services.logind.settings.Login.NAutoVTs=2;
+services.journald.extraConfig="SystemMaxUse=50M";
 hardware.nvidia={open=true;modesetting.enable=true;package=config.boot.kernelPackages.nvidiaPackages.stable;};
 services.pipewire={enable=true;alsa.enable=true;alsa.support32Bit=true;pulse.enable=true;};
 services.xserver={
@@ -36,7 +34,6 @@ xkb={layout="us,ru";options="grp:win_space_toggle";};
 displayManager.sessionCommands=''
 nvidia-settings --assign CurrentMetaMode="DP-2: 2560x1440_165 { ViewPortIn=1440x1080, ViewPortOut=2560x1440+0+0 }"
 xrandr --output DP-2 --panning 0x0 --fb 1440x1080
-picom &
 feh --bg-fill /home/dx3d/Downloads/zam.jpg &
 ${mySowm}/bin/sowm
 '';
@@ -49,12 +46,13 @@ gamescope.enable=true;
 bash.shellAliases={
 dotsync="cd ~/dotfiles && sudo cp /etc/nixos/configuration.nix . && sudo cp /etc/nixos/hardware-configuration.nix . && sudo cp /etc/nixos/flake.nix . && cp -r ~/.config/hypr . && cp -r ~/.config/waybar . && git add . && git commit -m \"update:$(date +'%Y-%m-%d %H:%M')\" && git pull origin main --rebase && git push origin main && cd -";
 clean="sudo nix-collect-garbage -d";
+v="nvim";
 };
 };
 users.users.dx3d={
 isNormalUser=true;
 extraGroups=["wheel" "networkmanager" "video" "audio"];
-packages=with pkgs;[mySowm st scrot vesktop micro git gh feh dmenu xclip flatpak picom librewolf fastfetch mangohud pciutils xorg.xorgserver xorg.xinput config.boot.kernelPackages.nvidiaPackages.stable.settings];
+packages=with pkgs;[mySowm st scrot vesktop micro git gh feh dmenu xclip flatpak librewolf fastfetch mangohud pciutils xorg.xorgserver xorg.xinput config.boot.kernelPackages.nvidiaPackages.stable.settings];
 };
 system.activationScripts.sober.text=''
 ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
