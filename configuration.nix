@@ -8,6 +8,7 @@ buildInputs=with pkgs;[libx11 libxinerama];
 nativeBuildInputs=with pkgs;[gcc gnumake];
 installPhase="mkdir -p $out/bin;make PREFIX=$out install";
 };
+mcFlags=builtins.concatStringsSep " " ["-Xmx6G" "-Xms6G" "-XX:+UseZGC" "-XX:+ZProactive" "-XX:+ZGenerational" "-XX:+UnlockExperimentalVMOptions" "-XX:+UnlockDiagnosticVMOptions" "-XX:+AlwaysPreTouch" "-XX:+UseNUMA" "-XX:+AlwaysActAsServerClassMachine" "-XX:+UseFastStalledReferenceHandling" "-XX:+UseCriticalJavaThreadPriority" "-XX:ThreadPriorityPolicy=1" "-XX:AllocatePrefetchStyle=3" "-XX:ReservedCodeCacheSize=512M" "-XX:NonNMethodCodeHeapSize=12M" "-XX:PooledCodeHeapSize=250M" "-XX:NonProfiledCodeHeapSize=250M" "-XX:MaxNodeLimit=240000" "-XX:NodeLimitFudgeFactor=8000" "-XX:+UseVectorCmov" "-XX:+PerfDisableSharedMem" "-XX:+UseFastUnorderedTimeStamps" "-XX:+UseLargePages" "-XX:+ExitOnOutOfMemoryError" "-Dsun.graphics.2d.noddraw=true" "-Djava.net.preferIPv4Stack=true" "-Dio.netty.allocator.type=pooled"];
 in{
 imports=[./hardware-configuration.nix];
 nixpkgs.overlays=[inputs.chaotic.overlays.default];
@@ -24,6 +25,7 @@ networking.networkmanager.enable=true;
 nixpkgs.config.allowUnfree=true;
 hardware.enableAllFirmware=true;
 zramSwap={enable=true;algorithm="zstd";};
+environment.variables._JAVA_OPTIONS=mcFlags;
 services.fstrim.enable=true;
 services.dbus.implementation="broker";
 services.logind.settings.Login.NAutoVTs=2;
@@ -57,7 +59,7 @@ v="nvim";
 users.users.dx3d={
 isNormalUser=true;
 extraGroups=["wheel" "networkmanager" "video" "audio"];
-packages=with pkgs;[mySowm st scrot vesktop micro git gh feh dmenu xclip flatpak librewolf fastfetch mangohud pciutils asusctl xorg.xorgserver xorg.xinput config.boot.kernelPackages.nvidiaPackages.stable.settings];
+packages=with pkgs;[mySowm st scrot vesktop micro git gh feh dmenu xclip flatpak librewolf fastfetch mangohud pciutils asusctl temurin-bin-21 xorg.xorgserver xorg.xinput config.boot.kernelPackages.nvidiaPackages.stable.settings];
 };
 system.activationScripts.sober.text=''
 ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
