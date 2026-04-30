@@ -26,6 +26,8 @@ zramSwap.enable=true;
 services.logind.settings.Login.NAutoVTs=2;
 services.journald.extraConfig="SystemMaxUse=50M";
 hardware.nvidia={open=true;modesetting.enable=true;package=config.boot.kernelPackages.nvidiaPackages.stable;};
+services.asusd.enable=true;
+services.udev.extraRules=''KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0666", TAG+="uaccess", TAG+="udev-acl"'';
 services.pipewire={enable=true;alsa.enable=true;alsa.support32Bit=true;pulse.enable=true;};
 services.xserver={
 enable=true;
@@ -41,10 +43,10 @@ ${mySowm}/bin/sowm
 services.displayManager.ly.enable=true;
 programs={
 steam.enable=true;
-gamemode.enable=true;
+gamemode={enable=true;settings={general={renice=10;};};};
 gamescope.enable=true;
 bash.shellAliases={
-dotsync="cd ~/dotfiles && sudo cp /etc/nixos/configuration.nix . && sudo cp /etc/nixos/hardware-configuration.nix . && sudo cp /etc/nixos/flake.nix . && cp -r ~/.config/hypr . && cp -r ~/.config/waybar . && git add . && git commit -m \"update:$(date +'%Y-%m-%d %H:%M')\" && git pull origin main --rebase && git push origin main && cd -";
+dotsync="cd ~/dotfiles && sudo cp /etc/nixos/configuration.nix . && sudo cp /etc/nixos/hardware-configuration.nix . && sudo cp /etc/nixos/flake.nix . && git add . && git commit -m \"update:$(date +'%Y-%m-%d %H:%M')\" && git pull origin main --rebase && git push origin main && cd -";
 clean="sudo nix-collect-garbage -d";
 v="nvim";
 };
@@ -52,7 +54,7 @@ v="nvim";
 users.users.dx3d={
 isNormalUser=true;
 extraGroups=["wheel" "networkmanager" "video" "audio"];
-packages=with pkgs;[mySowm st scrot vesktop micro git gh feh dmenu xclip flatpak librewolf fastfetch mangohud pciutils xorg.xorgserver xorg.xinput config.boot.kernelPackages.nvidiaPackages.stable.settings];
+packages=with pkgs;[mySowm st scrot vesktop micro git gh feh dmenu xclip flatpak librewolf fastfetch mangohud pciutils asusctl xorg.xorgserver xorg.xinput config.boot.kernelPackages.nvidiaPackages.stable.settings];
 };
 system.activationScripts.sober.text=''
 ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
