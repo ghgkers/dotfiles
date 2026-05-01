@@ -59,7 +59,7 @@ v="nvim";
 users.users.dx3d={
 isNormalUser=true;
 extraGroups=["wheel" "networkmanager" "video" "audio"];
-packages=with pkgs;[mySowm st scrot vesktop micro git gh feh dmenu xclip flatpak librewolf fastfetch mangohud pciutils asusctl appimage-run temurin-bin-25 xorg.xorgserver xorg.xinput config.boot.kernelPackages.nvidiaPackages.stable.settings];
+packages=with pkgs;[mySowm st scrot pavucontrol vesktop micro git gh feh dmenu xclip flatpak librewolf fastfetch mangohud pciutils asusctl appimage-run temurin-bin-25 xorg.xorgserver xorg.xinput config.boot.kernelPackages.nvidiaPackages.stable.settings];
 };
 system.activationScripts.sober.text=''
 ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
