@@ -1,36 +1,20 @@
 { config, pkgs, inputs, lib, ... }:
 let
-  mySowm = pkgs.stdenv.mkDerivation {
-    pname = "sowm";
-    version = "master";
-    src = pkgs.fetchFromGitHub {
-      owner = "dylanaraps";
-      repo = "sowm";
-      rev = "master";
-      sha256 = "sha256-Q65sU5K86pFk3QNlzfxgyoEw6NpBaZQmFOkUFnmoh+U=";
-    };
-    buildInputs = with pkgs; [ libx11 libxinerama ];
-    nativeBuildInputs = with pkgs; [ gcc gnumake ];
-    installPhase = "mkdir -p $out/bin; make PREFIX=$out install";
+  # Extra sysctl tunings – merge with boot.kernel.sysctl below
+  sysctlTweaks = {
+    "vm.vfs_cache_pressure" = 500;
+    "vm.swappiness" = 10;
+    "kernel.sched_child_runs_first" = 1;
+    "kernel.sched_autogroup_enabled" = 0;
+    "net.core.default_qdisc" = "cake";
+    "net.ipv4.tcp_congestion_control" = "bbr";
   };
-
-  mcFlags = builtins.concatStringsSep " " [
-    "-Xmx6G" "-Xms2G" "-XX:+UseZGC" "-XX:+ZGenerational"
-    "-XX:+UnlockExperimentalVMOptions" "-XX:+UnlockDiagnosticVMOptions"
-    "-XX:+AlwaysPreTouch" "-XX:+UseNUMA" "-XX:+AlwaysActAsServerClassMachine"
-    "-XX:+UseCriticalJavaThreadPriority" "-XX:ThreadPriorityPolicy=1"
-    "-XX:AllocatePrefetchStyle=3" "-XX:ReservedCodeCacheSize=256M"
-    "-XX:+UseVectorCmov" "-XX:+PerfDisableSharedMem"
-    "-XX:+UseFastUnorderedTimeStamps" "-XX:+UseLargePages"
-    "-XX:+ExitOnOutOfMemoryError" "-Dsun.graphics.2d.noddraw=true"
-    "-Djava.net.preferIPv4Stack=true" "-Dio.netty.allocator.type=pooled"
-  ];
 in
 {
   imports = [ ./hardware-configuration.nix ];
 
+  # ----- Nix settings -----
   nixpkgs.overlays = [ inputs.chaotic.overlays.default ];
-
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
     auto-optimise-store = true;
@@ -42,6 +26,7 @@ in
     options = "--delete-older-than 7d";
   };
 
+  # ----- Boot & Kernel (safe for console) -----
   boot = {
     loader = {
       systemd-boot.enable = true;
@@ -49,50 +34,53 @@ in
     };
     kernelPackages = pkgs.linuxPackages_cachyos;
     kernelParams = [
-      "nvidia-drm.modeset=1"
+      "nvidia-drm.modeset=0"            # keep console visible
       "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
-      "modprobe.blacklist=i2c_hid_acpi,i2c_hid,bluetooth,btusb,uvcvideo,usblp,lp"
+      # (your previous blacklist omitted – let things load for now)
     ];
-    kernel.sysctl = {
-      "vm.vfs_cache_pressure" = 500;
-      "vm.swappiness" = 10;
-    };
+    kernel.sysctl = sysctlTweaks;
   };
 
+  # ----- Hardware -----
+  nixpkgs.config.allowUnfree = true;
+  hardware.enableAllFirmware = true;
+  hardware.nvidia = {
+    open = true;
+    modesetting.enable = false;         # let X do its own modesetting
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+  };
+
+  # ----- Power & CPU -----
+  powerManagement.cpuFreqGovernor = "performance";   # use "schedutil" for battery
+
+  # ----- System services (CachyOS-like) -----
+  services.ananicy.enable = true;               # auto-nice daemon
+  services.irqbalance.enable = true;            # IRQ distribution
+  systemd.oomd.enable = true;                   # better OOM handling
+
+  # ----- Networking -----
   networking.hostName = "nix";
   networking.networkmanager.enable = true;
 
-  documentation.enable = false;
-  documentation.nixos.enable = false;
-  environment.defaultPackages = lib.mkForce [];
-
-  nixpkgs.config.allowUnfree = true;
-  hardware.enableAllFirmware = true;
-
+  # ----- Trim & Disk -----
+  services.fstrim.enable = true;
   zramSwap = {
     enable = true;
     algorithm = "zstd";
   };
 
-  environment.variables._JAVA_OPTIONS = mcFlags;
-
-  services.fstrim.enable = true;
+  # ----- DBus -----
   services.dbus.implementation = "broker";
-  services.logind.settings.Login.NAutoVTs = 1;
-  services.journald.extraConfig = "SystemMaxUse=50M";
 
-  hardware.nvidia = {
-    open = true;
-    modesetting.enable = true;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
-  };
-
-  services.asusd.enable = true;
-
+  # ----- I/O Scheduler udev rule -----
   services.udev.extraRules = ''
-    KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0666", TAG+="uaccess", TAG+="udev-acl"
+    # Set no scheduler for NVMe, kyber for SSD, bfq for rotational
+    ACTION=="add|change", KERNEL=="nvme*", ATTR{queue/scheduler}="none"
+    ACTION=="add|change", KERNEL=="sd*[!0-9]", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="kyber"
+    ACTION=="add|change", KERNEL=="sd*[!0-9]", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
   '';
 
+  # ----- Audio -----
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -100,68 +88,43 @@ in
     pulse.enable = true;
   };
 
-  # X11 server enabled, but no display manager – we use startx
+  # ----- X11 with no display manager -----
   services.xserver = {
     enable = true;
     videoDrivers = [ "nvidia" ];
-    xkb = {
-      layout = "us,ru";
-      options = "grp:win_space_toggle";
-    };
-    # No displayManager block at all – nothing to disable.
-    # We simply never enable any DM, and startx will be used.
+    xkb.layout = "us,ru";
+    xkb.options = "grp:win_space_toggle";
   };
 
-  # Provide a simple .xinitrc for user dx3d
+  # ----- startx with DWM (temporary – will replace with sowm later) -----
   systemd.tmpfiles.rules = [
     "L+ /home/dx3d/.xinitrc - - - - ${pkgs.writeText "xinitrc" ''
       #!/bin/sh
-      exec ${mySowm}/bin/sowm
+      exec ${pkgs.dwm}/bin/dwm
     ''}"
   ];
 
   environment.systemPackages = with pkgs; [
     xorg.xinit
+    dwm
+    st                  # a terminal so you can test
+    # add other packages later
   ];
 
-  programs = {
-    steam.enable = true;
-    gamemode = {
-      enable = true;
-      settings.general.renice = 10;
-    };
-    gamescope.enable = true;
-    bash.shellAliases = {
-      dotsync = "cd ~/dotfiles && sudo cp /etc/nixos/configuration.nix . && sudo cp /etc/nixos/hardware-configuration.nix . && sudo cp /etc/nixos/flake.nix . && git add . && git commit -m \"update:$(date +'%Y-%m-%d %H:%M')\" && git pull origin main --rebase && git push origin main && cd -";
-      clean = "sudo nix-collect-garbage -d";
-      v = "nvim";
-    };
-  };
-
+  # ----- User -----
   users.users.dx3d = {
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" "video" "audio" ];
-    packages = with pkgs; [
-      mySowm st scrot vesktop micro git gh feh appimage-run
-      pavucontrol dmenu xclip flatpak librewolf fastfetch
-      mangohud pciutils asusctl temurin-bin-25
-      xorg.xorgserver xorg.xinput xorg.xrandr
-      config.boot.kernelPackages.nvidiaPackages.stable.settings
-    ];
+    # No extra packages for now – keep build quick
   };
 
-  systemd.services.install-sober = {
-    description = "Install Sober Flatpak from Flathub";
-    wantedBy = [ "multi-user.target" ];
-    script = ''
-      ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-      ${pkgs.flatpak}/bin/flatpak install -y flathub org.vinegarhq.Sober || true
-    '';
-    serviceConfig.Type = "oneshot";
-    path = [ pkgs.flatpak ];
-    scriptArgs = "--skip-if-done";
-    environment.XDG_CACHE_HOME = "/var/cache/flatpak";
-  };
+  # ----- Misc -----
+  documentation.enable = false;
+  documentation.nixos.enable = false;
+  environment.defaultPackages = lib.mkForce [];
+
+  services.journald.extraConfig = "SystemMaxUse=50M";
+  services.logind.settings.Login.NAutoVTs = 1;
 
   system.stateVersion = "25.11";
 }
