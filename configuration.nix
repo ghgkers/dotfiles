@@ -152,14 +152,14 @@ in
     steam
     gamemode
     gamescope
-    mangohud
-    goverlay               # GUI to configure MangoHud
+    mangohud               # just the package – use with `mangohud %command%`
+    goverlay               # GUI to configure MangoHud (optional)
     libstrangle            # frame rate limiter
     wineWowPackages.stable
     winetricks
     dxvk
     vkd3d
-    lutris                 # optional game launcher
+    lutris
     protonup-qt            # easy Proton‑GE installs
 
     # System monitoring
@@ -181,7 +181,6 @@ in
     settings.general.renice = 10;
   };
   programs.gamescope.enable = true;
-  programs.mangohud.enable = true;
 
   # Bash aliases (from your original)
   programs.bash.shellAliases = {
@@ -197,10 +196,6 @@ in
       "wheel" "networkmanager" "video" "audio"
       "input"                 # critical for keyboard/mouse in X
       "gamemode"              # so gamemode can renice games
-    ];
-    # User‑specific packages (if you prefer them isolated)
-    packages = with pkgs; [
-      # Already in systemPackages, but you could list additional ones here
     ];
   };
 
