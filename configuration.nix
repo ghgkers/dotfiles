@@ -87,8 +87,7 @@ in
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
-  # Fix: asusd requires this
-  hardware.asusctl.enable = true;
+  # ASUS control (correct way – no hardware.asusctl)
   services.asusd.enable = true;
 
   services.udev.extraRules = ''
@@ -109,12 +108,19 @@ in
       layout = "us,ru";
       options = "grp:win_space_toggle";
     };
-    # Fix: Actually use sowm
-    windowManager.sowm = {
-      enable = true;
-      package = mySowm;
-    };
+    # Default window manager
+    windowManager.default = "sowm";
   };
+
+  # Custom session for sowm (NixOS has no built-in sowm module)
+  services.displayManager.session = [{
+    manage = "desktop";
+    name = "sowm";
+    start = ''
+      ${mySowm}/bin/sowm &
+      exec ${pkgs.xorg.xrandr}/bin/xrandr --auto
+    '';
+  }];
 
   services.displayManager.ly.enable = true;
 
@@ -143,7 +149,7 @@ in
     ];
   };
 
-  # Fix: One‑time installation of Sober
+  # One‑time Sober installation
   systemd.services.install-sober = {
     description = "Install Sober Flatpak from Flathub";
     wantedBy = [ "multi-user.target" ];
@@ -152,9 +158,7 @@ in
       ${pkgs.flatpak}/bin/flatpak install -y flathub org.vinegarhq.Sober || true
     '';
     serviceConfig.Type = "oneshot";
-    # Prevents re‑running on every boot
     path = [ pkgs.flatpak ];
-    # Use a flag file to run only once
     scriptArgs = "--skip-if-done";
     environment.XDG_CACHE_HOME = "/var/cache/flatpak";
   };
