@@ -108,10 +108,11 @@ in
       layout = "us,ru";
       options = "grp:win_space_toggle";
     };
-    # No display manager
     displayManager = {
       auto.enable = false;
     };
+    # NOTE: No windowManager.default or desktopManager.default is needed
+    # because we launch sowm via ~/.xinitrc with startx.
   };
 
   # Provide a simple .xinitrc for user dx3d
@@ -122,7 +123,6 @@ in
     ''}"
   ];
 
-  # Ensure xinit is available system-wide
   environment.systemPackages = with pkgs; [
     xorg.xinit
   ];
