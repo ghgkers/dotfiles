@@ -100,6 +100,7 @@ in
     pulse.enable = true;
   };
 
+  # X11 server enabled, but no display manager
   services.xserver = {
     enable = true;
     videoDrivers = [ "nvidia" ];
@@ -107,24 +108,28 @@ in
       layout = "us,ru";
       options = "grp:win_space_toggle";
     };
-  };
-
-  # Add a custom session for sowm using sessionPackages
-  let
-    sowmSession = pkgs.makeDesktopItem {
-      name = "sowm";
-      desktopName = "sowm";
-      comment = "Simple X11 window manager";
-      type = "Application";
-      exec = "${mySowm}/bin/sowm";
-      categories = [ "WindowManager" ];
+    # Disable any automatic display manager
+    displayManager = {
+      auto.enable = false;
+      defaultSession = "none+sowm";
     };
-  in {
-    services.displayManager.sessionPackages = [ sowmSession ];
-    services.displayManager.defaultSession = "sowm";
+    # Ensure we can start sowm via startx
+    windowManager.default = "sowm";
   };
 
-  services.displayManager.ly.enable = true;
+  # Provide a simple .xinitrc for user dx3d
+  # It will be placed at ~dx3d/.xinitrc
+  systemd.tmpfiles.rules = [
+    "L+ /home/dx3d/.xinitrc - - - - ${pkgs.writeText "xinitrc" ''
+      #!/bin/sh
+      exec ${mySowm}/bin/sowm
+    ''}"
+  ];
+
+  # Also ensure xinit is available system-wide (so startx command exists)
+  environment.systemPackages = with pkgs; [
+    xorg.xinit
+  ];
 
   programs = {
     steam.enable = true;
@@ -147,7 +152,8 @@ in
       mySowm st scrot vesktop micro git gh feh appimage-run
       pavucontrol dmenu xclip flatpak librewolf fastfetch
       mangohud pciutils asusctl temurin-bin-25
-      xorg.xorgserver xorg.xinput config.boot.kernelPackages.nvidiaPackages.stable.settings
+      xorg.xorgserver xorg.xinput xorg.xrandr   # xrandr added for convenience
+      config.boot.kernelPackages.nvidiaPackages.stable.settings
     ];
   };
 
