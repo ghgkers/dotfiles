@@ -87,7 +87,6 @@ in
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
-  # ASUS control (correct way – no hardware.asusctl)
   services.asusd.enable = true;
 
   services.udev.extraRules = ''
@@ -108,19 +107,22 @@ in
       layout = "us,ru";
       options = "grp:win_space_toggle";
     };
-    # Default window manager
-    windowManager.default = "sowm";
   };
 
-  # Custom session for sowm (NixOS has no built-in sowm module)
-  services.displayManager.session = [{
-    manage = "desktop";
-    name = "sowm";
-    start = ''
-      ${mySowm}/bin/sowm &
-      exec ${pkgs.xorg.xrandr}/bin/xrandr --auto
-    '';
-  }];
+  # Add a custom session for sowm using sessionPackages
+  let
+    sowmSession = pkgs.makeDesktopItem {
+      name = "sowm";
+      desktopName = "sowm";
+      comment = "Simple X11 window manager";
+      type = "Application";
+      exec = "${mySowm}/bin/sowm";
+      categories = [ "WindowManager" ];
+    };
+  in {
+    services.displayManager.sessionPackages = [ sowmSession ];
+    services.displayManager.defaultSession = "sowm";
+  };
 
   services.displayManager.ly.enable = true;
 
@@ -149,7 +151,6 @@ in
     ];
   };
 
-  # One‑time Sober installation
   systemd.services.install-sober = {
     description = "Install Sober Flatpak from Flathub";
     wantedBy = [ "multi-user.target" ];
