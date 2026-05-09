@@ -1,18 +1,12 @@
 {
-  description = "NixOS with CachyOS kernel + DWM (recovery)";
+  description = "Minimal NixOS with DWM, st, Librewolf";
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
-    chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
-  };
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
 
-  outputs = { self, nixpkgs, chaotic, ... }@inputs: {
+  outputs = { self, nixpkgs }: {
     nixosConfigurations.nix = nixpkgs.lib.nixosSystem {
-      specialArgs = { inherit inputs; };
-      modules = [
-        ./configuration.nix
-        chaotic.nixosModules.default
-      ];
+      system = "x86_64-linux";
+      modules = [ ./configuration.nix ];
     };
   };
 }
