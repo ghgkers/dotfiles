@@ -100,7 +100,7 @@ in
     pulse.enable = true;
   };
 
-  # X11 server enabled, but no display manager
+  # X11 server enabled, but no display manager – we use startx
   services.xserver = {
     enable = true;
     videoDrivers = [ "nvidia" ];
@@ -108,17 +108,13 @@ in
       layout = "us,ru";
       options = "grp:win_space_toggle";
     };
-    # Disable any automatic display manager
+    # No display manager
     displayManager = {
       auto.enable = false;
-      defaultSession = "none+sowm";
     };
-    # Ensure we can start sowm via startx
-    windowManager.default = "sowm";
   };
 
   # Provide a simple .xinitrc for user dx3d
-  # It will be placed at ~dx3d/.xinitrc
   systemd.tmpfiles.rules = [
     "L+ /home/dx3d/.xinitrc - - - - ${pkgs.writeText "xinitrc" ''
       #!/bin/sh
@@ -126,7 +122,7 @@ in
     ''}"
   ];
 
-  # Also ensure xinit is available system-wide (so startx command exists)
+  # Ensure xinit is available system-wide
   environment.systemPackages = with pkgs; [
     xorg.xinit
   ];
@@ -152,7 +148,7 @@ in
       mySowm st scrot vesktop micro git gh feh appimage-run
       pavucontrol dmenu xclip flatpak librewolf fastfetch
       mangohud pciutils asusctl temurin-bin-25
-      xorg.xorgserver xorg.xinput xorg.xrandr   # xrandr added for convenience
+      xorg.xorgserver xorg.xinput xorg.xrandr
       config.boot.kernelPackages.nvidiaPackages.stable.settings
     ];
   };
