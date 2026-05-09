@@ -1,5 +1,5 @@
 {
-  description = "NixOS configuration with CachyOS kernel and sowm";
+  description = "NixOS with CachyOS kernel + DWM (recovery)";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
