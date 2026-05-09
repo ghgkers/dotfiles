@@ -4,6 +4,7 @@
 echo "copying files..."
 sudo cp /etc/nixos/configuration.nix .
 sudo cp /etc/nixos/hardware-configuration.nix .
+sudo cp /etc/nixos/flake.nix .   # <-- added this line
 cp -r ~/.config/hypr .
 cp -r ~/.config/waybar .
 
