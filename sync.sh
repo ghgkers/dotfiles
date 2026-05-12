@@ -1,24 +1,28 @@
 #!/bin/bash
 
-# 1. Копируем актуальные конфиги в папку репозитория
-echo "copying files..."
+# Проверяем конфиг на ошибки перед копированием
+echo "Checking config for errors..."
+if ! nix-instantiate --parse /etc/nixos/configuration.nix > /dev/null; then
+    echo "ERROR: Syntax error in configuration.nix! Commit aborted."
+    exit 1
+fi
+
+echo "Copying files..."
 sudo cp /etc/nixos/configuration.nix .
 sudo cp /etc/nixos/hardware-configuration.nix .
 sudo cp /etc/nixos/flake.nix .
-cp -r ~/.config/hypr .
-cp -r ~/.config/waybar .
+sudo cp /etc/nixos/flake.lock . # ВАЖНО: без этого файла не будет воспроизводимости!
+cp -r ~/.config/hypr . 2>/dev/null || echo "Hypr config not found, skipping..."
+cp -r ~/.config/waybar . 2>/dev/null || echo "Waybar config not found, skipping..."
 
-# 2. Добавляем изменения в Git
 git add .
 
-# 3. Делаем коммит (если не ввел сообщение, будет стандартное)
 msg="update config: $(date +'%Y-%m-%d %H:%M')"
 if [ -n "$1" ]; then
   msg="$1"
 fi
 git commit -m "$msg"
 
-# 4. Отправляем в облако
 git push origin main
 
-echo "Done! Твой закат и конфиги теперь на GitHub."
+echo "Done! Твой конфиг и flake.lock теперь на GitHub."
