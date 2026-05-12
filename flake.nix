@@ -2,10 +2,9 @@
   description = "Ultimate NixOS Gaming + sowm (CachyOS kernel)";
 
   inputs = {
-    # Stable base, but we'll overlay CachyOS kernel for speed
+    # 25.11 — отличный выбор для стабильности
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
-
-    # Chaotic Nyx – provides CachyOS kernel & extra gaming packages
+    # Chaotic Nyx для ядра CachyOS
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
   };
 
@@ -14,11 +13,7 @@
       specialArgs = { inherit inputs; };
       modules = [
         ./configuration.nix
-        chaotic.nixosModules.default
-        # Enable the chaotic overlay (so we can use linuxPackages_cachyos-lto)
-        ({ config, pkgs, ... }: {
-          nixpkgs.overlays = [ chaotic.overlays.default ];
-        })
+        chaotic.nixosModules.default # Этого достаточно, оверлей подключится сам
       ];
     };
   };
