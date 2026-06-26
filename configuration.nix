@@ -1,201 +1,132 @@
 { config, pkgs, inputs, lib, ... }:
 let
-  # ===================== NETWORK & HvH TWEAKS =====================
   sysctlTweaks = {
-    "vm.vfs_cache_pressure" = 500;
-    "vm.swappiness" = 10;
-    "kernel.sched_child_runs_first" = 1;
-    "kernel.sched_autogroup_enabled" = 0;
-    "net.core.default_qdisc" = "cake";
-    "net.ipv4.tcp_congestion_control" = "bbr";
+    "vm.vfs_cache_pressure" = 500;[cite: 3]
+    "vm.swappiness" = 10;[cite: 3]
+    "kernel.sched_child_runs_first" = 1;[cite: 3]
+    "kernel.sched_autogroup_enabled" = 0;[cite: 3]
+    "net.core.default_qdisc" = "cake";[cite: 3]
+    "net.ipv4.tcp_congestion_control" = "bbr";[cite: 3]
   };
 in
 {
-  imports = [ ./hardware-configuration.nix ];
+  imports = [ ]; 
 
-  # ===================== CORE OS =====================
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-  nixpkgs.config.allowUnfree = true;
-  networking.hostName = "nix-gaming";
-  networking.networkmanager.enable = true;
-  time.timeZone = "Asia/Almaty";
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];[cite: 3]
+  nixpkgs.config.allowUnfree = true;[cite: 3]
+  networking.networkmanager.enable = true;[cite: 3]
+  time.timeZone = "Asia/Almaty";[cite: 3]
 
-  # ===================== PRIVILEGE ESCALATION =====================
-  security.sudo.enable = false;
-  security.doas.enable = true;
+  security.sudo.enable = false;[cite: 3]
+  security.doas.enable = true;[cite: 3]
   security.doas.extraRules = [{
-    users = [ "dx3d" ];
-    keepEnv = true;
-    persist = true;
+    users = [ "dx3d" ];[cite: 3]
+    keepEnv = true;[cite: 3]
+    persist = true;[cite: 3]
   }];
 
-  # ===================== KERNEL & BOOT (CACHYOS + 8000HZ FIX) =====================
   boot = {
-    loader.systemd-boot.enable = true;
-    loader.efi.canTouchEfiVariables = true;
-    
-    # Low-latency CachyOS Kernel
-    kernelPackages = pkgs.linuxPackages_cachyos;
-    
-    # nvidia-drm for Wayland | usbhid.kbpoll=1 for 8000Hz polling rate
-    kernelParams = [ 
-      "nvidia-drm.modeset=1" 
-      "usbcore.autosuspend=-1" 
-      "usbhid.kbpoll=1" 
-    ];
-    kernel.sysctl = sysctlTweaks;
-    
-    # PERMANENT HARDWARE BLACKLIST (Touchpad & Bluetooth completely dead)
-    blacklistedKernelModules = [
-      "bluetooth" "btusb" "btintel" "btrtl"
-      "i2c_hid" "i2c_hid_acpi" "hid_multitouch"
-    ];
-
-    supportedFilesystems = [ "fuse" ]; # Required for appimage-run FUSE execution
-  };
-
-  # ===================== HARDWARE (ASUS ROG + NVIDIA) =====================
-  services.asusd.enable = true;
-  services.xserver.videoDrivers = [ "nvidia" ];
-  hardware.bluetooth.enable = false;
-
-  hardware.nvidia = {
-    modesetting.enable = true;
-    # Forced to FALSE: Uses proprietary drivers to fix Java/Minecraft frame-pacing
-    open = false;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
+    loader.systemd-boot.enable = true;[cite: 3]
+    loader.efi.canTouchEfiVariables = true;[cite: 3]
+    kernelPackages = pkgs.linuxPackages_cachyos;[cite: 3]
+    kernel.sysctl = sysctlTweaks;[cite: 3]
+    supportedFilesystems = [ "fuse" ];[cite: 3]
   };
   
-  powerManagement.cpuFreqGovernor = "performance"; # Locks CPU scaling from stuttering
+  powerManagement.cpuFreqGovernor = "performance";[cite: 3]
+  zramSwap.enable = true;[cite: 3]
+  
+  services.ananicy = {
+    enable = true;[cite: 3]
+    package = pkgs.ananicy-cpp;[cite: 3]
+  };
 
-  # ===================== AUDIO (LOW LATENCY TWEAK) =====================
   services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
+    enable = true;[cite: 3]
+    alsa.enable = true;[cite: 3]
+    alsa.support32Bit = true;[cite: 3]
+    pulse.enable = true;[cite: 3]
     
-    # High-performance audio quantum loops for instant sound cues
     extraConfig.pipewire."92-low-latency" = {
       "context.properties" = {
-        "default.clock.rate" = 48000;
-        "default.clock.quantum" = 64;
-        "default.clock.min-quantum" = 32;
-        "default.clock.max-quantum" = 1024;
+        "default.clock.rate" = 48000;[cite: 3]
+        "default.clock.quantum" = 64;[cite: 3]
+        "default.clock.min-quantum" = 32;[cite: 3]
+        "default.clock.max-quantum" = 1024;[cite: 3]
       };
     };
   };
 
-  # ===================== GRAPHICS & WINDOW MANAGERS =====================
-  # Wayland / Hyprland configuration
   programs.hyprland = {
-    enable = true;
-    xwayland.enable = true;
+    enable = true;[cite: 3]
+    xwayland.enable = true;[cite: 3]
   };
 
-  # Enable SDDM as the login manager
   services.displayManager.sddm = {
-    enable = true;
-    wayland.enable = true;
+    enable = true;[cite: 3]
+    wayland.enable = true;[cite: 3]
   };
 
-  # X11 & DWM Window Manager Configuration
   services.xserver = {
-    enable = true;
-    displayManager.startx.enable = true;
-    
+    enable = true;[cite: 3]
+    displayManager.startx.enable = true;[cite: 3]
     windowManager.dwm = {
-      enable = true;
-      package = pkgs.dwm;
+      enable = true;[cite: 3]
+      package = pkgs.dwm;[cite: 3]
     };
-
-    # Keyboard layout configuration swapped by Super+Space
     xkb = {
-      layout = "us,ru";
-      options = "grp:win_space_toggle";
+      layout = "us,ru";[cite: 3]
+      options = "grp:win_space_toggle";[cite: 3]
     };
   };
 
-  console.useXkbConfig = true; # Forces console TTYs to respect layouts
-
-  # Creates default startup execution link for raw X11 environments
+  console.useXkbConfig = true;[cite: 3]
   environment.etc."X11/xinit/xinitrc".text = ''
     exec dwm
-  '';
+  '';[cite: 3]
 
-  # ===================== FLATPAK & SOBER ROBLOX =====================
-  services.flatpak.enable = true;
+  services.flatpak.enable = true;[cite: 3]
   xdg.portal = {
-    enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-hyprland ];
-    config.common.default = "*";
+    enable = true;[cite: 3]
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-hyprland ];[cite: 3]
+    config.common.default = "*";[cite: 3]
   };
 
   systemd.services.install-sober = {
-    description = "Install Sober Roblox";
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig.Type = "oneshot";
+    description = "Install Sober Roblox";[cite: 3]
+    after = [ "network-online.target" ];[cite: 3]
+    wants = [ "network-online.target" ];[cite: 3]
+    wantedBy = [ "multi-user.target" ];[cite: 3]
+    serviceConfig.Type = "oneshot";[cite: 3]
     script = ''
       ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
       ${pkgs.flatpak}/bin/flatpak install -y flathub org.vinegarhq.Sober || true
-    '';
+    '';[cite: 3]
   };
 
-  # ===================== PACKAGES =====================
-  environment.systemPackages = with pkgs; [
-    # System & Terminal
-    git wget gnumake gcc xterm xorg.xinit dmenu st
-    librewolf fastfetch htop pavucontrol
-    
-    # Wayland Essentials (Needed for Hyprland & Vim integration)
-    wl-clipboard 
-    waybar
-    rofi
-    vim
-    doas
-    kitty
-    appimage-run
-    vesktop
-    file-roller
-    xfce.thunar
-    xfce.tumbler
-
-    # Window Manager
-    dwm
-    
-    # Gaming & Dependencies
-    steam gamemode mangohud lutris wineWowPackages.stable
-    jre8 # Required for old 1.16.5+ Minecraft Clients
-    
-    temurin-bin-8   # LiquidBounce 1.8.9
-    temurin-bin-17  # LiquidBounce 1.16.5+
-    temurin-bin-21  # Modern Fabric/Forge Clients
-  ];
-
-  # ===================== HARDCORE LATENCY ENVIRONMENT VARIABLES =====================
-  environment.variables = {
-    "__GL_MaxFramesAllowed" = "1";       # Eliminates NVIDIA pre-rendered frame lag
-    "__GL_THREADED_OPTIMIZATIONS" = "1"; # Multi-threads OpenGL tasks (Huge for Minecraft)
-    "PROMPT_COMMAND" = "";               # Slight terminal speedup
-  };
-
-  # Prevent client crash due to heavy mod assets file handle exhaustion
-  security.pam.loginLimits = [
-    { domain = "@wheel"; item = "nofile"; type = "soft"; value = "524288"; }
-    { domain = "@wheel"; item = "nofile"; type = "hard"; value = "524288"; }
-  ];
-
-  # ===================== USER & OPTIMIZATION =====================
   users.users.dx3d = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "video" "audio" "input" "gamemode" ];
+    isNormalUser = true;[cite: 3]
+    extraGroups = [ "wheel" "networkmanager" "video" "audio" "input" "gamemode" ];[cite: 3]
   };
 
-  zramSwap.enable = true;
-  services.ananicy.enable = true;
-  services.ananicy.package = pkgs.ananicy-cpp;
+  environment.variables = {
+    "__GL_MaxFramesAllowed" = "1";[cite: 3]
+    "__GL_THREADED_OPTIMIZATIONS" = "1";[cite: 3]
+    "PROMPT_COMMAND" = "";[cite: 3]
+  };
 
-  system.stateVersion = "24.11";
+  security.pam.loginLimits = [
+    { domain = "@wheel"; item = "nofile"; type = "soft"; value = "524288"; }[cite: 3]
+    { domain = "@wheel"; item = "nofile"; type = "hard"; value = "524288"; }[cite: 3]
+  ];
+
+  environment.systemPackages = with pkgs; [
+    git wget gnumake gcc xterm xorg.xinit dmenu st doas[cite: 3]
+    librewolf fastfetch htop pavucontrol appimage-run file-roller[cite: 3]
+    waybar rofi vim kitty vesktop xfce.thunar xfce.tumbler[cite: 3]
+    steam gamemode mangohud lutris wineWowPackages.stable[cite: 3]
+    jre8 temurin-bin-8 temurin-bin-17 temurin-bin-21[cite: 3]
+  ];
+
+  system.stateVersion = "24.11";[cite: 3]
 }
