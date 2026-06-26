@@ -1,132 +1,132 @@
 { config, pkgs, inputs, lib, ... }:
 let
   sysctlTweaks = {
-    "vm.vfs_cache_pressure" = 500;[cite: 3]
-    "vm.swappiness" = 10;[cite: 3]
-    "kernel.sched_child_runs_first" = 1;[cite: 3]
-    "kernel.sched_autogroup_enabled" = 0;[cite: 3]
-    "net.core.default_qdisc" = "cake";[cite: 3]
-    "net.ipv4.tcp_congestion_control" = "bbr";[cite: 3]
+    "vm.vfs_cache_pressure" = 500;
+    "vm.swappiness" = 10;
+    "kernel.sched_child_runs_first" = 1;
+    "kernel.sched_autogroup_enabled" = 0;
+    "net.core.default_qdisc" = "cake";
+    "net.ipv4.tcp_congestion_control" = "bbr";
   };
 in
 {
   imports = [ ]; 
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];[cite: 3]
-  nixpkgs.config.allowUnfree = true;[cite: 3]
-  networking.networkmanager.enable = true;[cite: 3]
-  time.timeZone = "Asia/Almaty";[cite: 3]
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nixpkgs.config.allowUnfree = true;
+  networking.networkmanager.enable = true;
+  time.timeZone = "Asia/Almaty";
 
-  security.sudo.enable = false;[cite: 3]
-  security.doas.enable = true;[cite: 3]
+  security.sudo.enable = false;
+  security.doas.enable = true;
   security.doas.extraRules = [{
-    users = [ "dx3d" ];[cite: 3]
-    keepEnv = true;[cite: 3]
-    persist = true;[cite: 3]
+    users = [ "dx3d" ];
+    keepEnv = true;
+    persist = true;
   }];
 
   boot = {
-    loader.systemd-boot.enable = true;[cite: 3]
-    loader.efi.canTouchEfiVariables = true;[cite: 3]
-    kernelPackages = pkgs.linuxPackages_cachyos;[cite: 3]
-    kernel.sysctl = sysctlTweaks;[cite: 3]
-    supportedFilesystems = [ "fuse" ];[cite: 3]
+    loader.systemd-boot.enable = true;
+    loader.efi.canTouchEfiVariables = true;
+    kernelPackages = pkgs.linuxPackages_cachyos;
+    kernel.sysctl = sysctlTweaks;
+    supportedFilesystems = [ "fuse" ];
   };
   
-  powerManagement.cpuFreqGovernor = "performance";[cite: 3]
-  zramSwap.enable = true;[cite: 3]
+  powerManagement.cpuFreqGovernor = "performance";
+  zramSwap.enable = true;
   
   services.ananicy = {
-    enable = true;[cite: 3]
-    package = pkgs.ananicy-cpp;[cite: 3]
+    enable = true;
+    package = pkgs.ananicy-cpp;
   };
 
   services.pipewire = {
-    enable = true;[cite: 3]
-    alsa.enable = true;[cite: 3]
-    alsa.support32Bit = true;[cite: 3]
-    pulse.enable = true;[cite: 3]
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
     
     extraConfig.pipewire."92-low-latency" = {
       "context.properties" = {
-        "default.clock.rate" = 48000;[cite: 3]
-        "default.clock.quantum" = 64;[cite: 3]
-        "default.clock.min-quantum" = 32;[cite: 3]
-        "default.clock.max-quantum" = 1024;[cite: 3]
+        "default.clock.rate" = 48000;
+        "default.clock.quantum" = 64;
+        "default.clock.min-quantum" = 32;
+        "default.clock.max-quantum" = 1024;
       };
     };
   };
 
   programs.hyprland = {
-    enable = true;[cite: 3]
-    xwayland.enable = true;[cite: 3]
+    enable = true;
+    xwayland.enable = true;
   };
 
   services.displayManager.sddm = {
-    enable = true;[cite: 3]
-    wayland.enable = true;[cite: 3]
+    enable = true;
+    wayland.enable = true;
   };
 
   services.xserver = {
-    enable = true;[cite: 3]
-    displayManager.startx.enable = true;[cite: 3]
+    enable = true;
+    displayManager.startx.enable = true;
     windowManager.dwm = {
-      enable = true;[cite: 3]
-      package = pkgs.dwm;[cite: 3]
+      enable = true;
+      package = pkgs.dwm;
     };
     xkb = {
-      layout = "us,ru";[cite: 3]
-      options = "grp:win_space_toggle";[cite: 3]
+      layout = "us,ru";
+      options = "grp:win_space_toggle";
     };
   };
 
-  console.useXkbConfig = true;[cite: 3]
+  console.useXkbConfig = true;
   environment.etc."X11/xinit/xinitrc".text = ''
     exec dwm
-  '';[cite: 3]
+  '';
 
-  services.flatpak.enable = true;[cite: 3]
+  services.flatpak.enable = true;
   xdg.portal = {
-    enable = true;[cite: 3]
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-hyprland ];[cite: 3]
-    config.common.default = "*";[cite: 3]
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-hyprland ];
+    config.common.default = "*";
   };
 
   systemd.services.install-sober = {
-    description = "Install Sober Roblox";[cite: 3]
-    after = [ "network-online.target" ];[cite: 3]
-    wants = [ "network-online.target" ];[cite: 3]
-    wantedBy = [ "multi-user.target" ];[cite: 3]
-    serviceConfig.Type = "oneshot";[cite: 3]
+    description = "Install Sober Roblox";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig.Type = "oneshot";
     script = ''
       ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
       ${pkgs.flatpak}/bin/flatpak install -y flathub org.vinegarhq.Sober || true
-    '';[cite: 3]
+    '';
   };
 
   users.users.dx3d = {
-    isNormalUser = true;[cite: 3]
-    extraGroups = [ "wheel" "networkmanager" "video" "audio" "input" "gamemode" ];[cite: 3]
+    isNormalUser = true;
+    extraGroups = [ "wheel" "networkmanager" "video" "audio" "input" "gamemode" ];
   };
 
   environment.variables = {
-    "__GL_MaxFramesAllowed" = "1";[cite: 3]
-    "__GL_THREADED_OPTIMIZATIONS" = "1";[cite: 3]
-    "PROMPT_COMMAND" = "";[cite: 3]
+    "__GL_MaxFramesAllowed" = "1";
+    "__GL_THREADED_OPTIMIZATIONS" = "1";
+    "PROMPT_COMMAND" = "";
   };
 
   security.pam.loginLimits = [
-    { domain = "@wheel"; item = "nofile"; type = "soft"; value = "524288"; }[cite: 3]
-    { domain = "@wheel"; item = "nofile"; type = "hard"; value = "524288"; }[cite: 3]
+    { domain = "@wheel"; item = "nofile"; type = "soft"; value = "524288"; }
+    { domain = "@wheel"; item = "nofile"; type = "hard"; value = "524288"; }
   ];
 
   environment.systemPackages = with pkgs; [
-    git wget gnumake gcc xterm xorg.xinit dmenu st doas[cite: 3]
-    librewolf fastfetch htop pavucontrol appimage-run file-roller[cite: 3]
-    waybar rofi vim kitty vesktop xfce.thunar xfce.tumbler[cite: 3]
-    steam gamemode mangohud lutris wineWowPackages.stable[cite: 3]
-    jre8 temurin-bin-8 temurin-bin-17 temurin-bin-21[cite: 3]
+    git wget gnumake gcc xterm xorg.xinit dmenu st doas
+    librewolf fastfetch htop pavucontrol appimage-run file-roller
+    waybar rofi vim kitty vesktop xfce.thunar xfce.tumbler
+    steam gamemode mangohud lutris wineWowPackages.stable
+    jre8 temurin-bin-8 temurin-bin-17 temurin-bin-21
   ];
 
-  system.stateVersion = "24.11";[cite: 3]
+  system.stateVersion = "24.11";
 }
