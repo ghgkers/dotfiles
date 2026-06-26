@@ -1,24 +1,24 @@
 { config, pkgs, ... }: {
-  networking.hostName = "nix-gaming";[cite: 3]
+  networking.hostName = "nix-gaming";
 
-  services.asusd.enable = true;[cite: 3]
-  services.xserver.videoDrivers = [ "nvidia" ];[cite: 3]
-  hardware.bluetooth.enable = false;[cite: 3]
+  services.asusd.enable = true;
+  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.bluetooth.enable = false;
 
   hardware.nvidia = {
-    modesetting.enable = true;[cite: 3]
-    open = false;[cite: 3]
-    package = config.boot.kernelPackages.nvidiaPackages.stable;[cite: 3]
+    modesetting.enable = true;
+    open = false;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
   boot.kernelParams = [ 
-    "nvidia-drm.modeset=1"[cite: 3]
-    "usbcore.autosuspend=-1"[cite: 3]
-    "usbhid.kbpoll=1"[cite: 3]
+    "nvidia-drm.modeset=1"
+    "usbcore.autosuspend=-1"
+    "usbhid.kbpoll=1"
   ];
 
   boot.blacklistedKernelModules = [
-    "bluetooth" "btusb" "btintel" "btrtl"[cite: 3]
-    "i2c_hid" "i2c_hid_acpi" "hid_multitouch"[cite: 3]
+    "bluetooth" "btusb" "btintel" "btrtl"
+    "i2c_hid" "i2c_hid_acpi" "hid_multitouch"
   ];
 }
